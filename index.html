@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html lang="en-us">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Train Tracker</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Firebase Reference -->
+    <script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+
+    <!-- Moment.js Reference -->
+    <!-- <script src="http://momentjs.com/downloads/moment.js"></script>   -->
+    <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+
+</head>
+
+<body>
+
+    <!-- Employee Tracker -->
+    <div class="container">
+
+        <!-- Jumbotron -->
+        <div class="jumbotron" style="background-color: black; color: white">
+            <h1 class="text-center">Train Time</h1>
+            <h3 class="text-center">Train train train train train train train.</h3>
+        </div>
+
+        <div class="row">
+
+            <div class="col-lg-12">
+
+                <!-- Current Employees-->
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong>Current Train Schedule</strong>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-hover" id='train-table'>
+                            <thead>
+                                <tr>
+                                    <th>Train Name</th>
+                                    <th>Destination</th>
+                                    <th>Frequency (min)</th>
+                                    <th>Next Arrival</th>
+                                    <th>Minutes Away</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Employee  -->
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <strong>Add Train</strong>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- Entry Form -->
+                        <form>
+                            <div class="form-group">
+                                <label for="train-name-input">Train Name</label>
+                                <input class="form-control" id="train-name-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="destination-input">Destination</label>
+                                <input class="form-control" id="destination-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="first-train-input">First Train Time (HH:mm - military time)</label>
+                                <input class="form-control" id="first-train-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label for="freq-input">Frequency (min)</label>
+                                <input class="form-control" id="freq-input" type="text">
+                            </div>
+                            <button class="btn btn-primary" id="add-train-btn" type="submit">Submit</button>
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery.js"></script>
+
+<!-- Script -->
+<script>
+    /* global firebase moment */
+    // Steps to complete:
+
+    // 1. Initialize Firebase
+    // 2. Create button for adding new employees - then update the html + update the database
+    // 3. Create a way to retrieve employees from the employee database.
+    // 4. Create a way to calculate the months worked. Using difference between start and current time.
+    //    Then use moment.js formatting to set difference in months.
+    // 5. Calculate Total billed
+
+    // 1. Initialize Firebase
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyCmmDrGne9pCIr5ki_YAIDZQq0GBT7ahoY",
+        authDomain: "fir-homework-8ffdf.firebaseapp.com",
+        databaseURL: "https://fir-homework-8ffdf.firebaseio.com",
+        projectId: "fir-homework-8ffdf",
+        storageBucket: "fir-homework-8ffdf.appspot.com",
+        messagingSenderId: "481444426396"
+    };
+    firebase.initializeApp(config);
+
+    var database = firebase.database();
+
+    // 2. Button for adding Employees
+    $("#add-employee-btn").on("click", function (event) {
+        event.preventDefault();
+
+        // Grabs user input
+        var trnName = $("#train-name-input").val().trim();
+        var trnDest = $("#destination-input").val().trim();
+        var trnFrst = moment($("#first-train-input").val().trim(), "DD/MM/YY").format("X");
+        var trnFreq = $("#freq-input").val().trim();
+
+        // Creates local "temporary" object for holding employee data
+        var newTrn = {
+            name: trnName,
+            destin: trnDest,
+            start: trnFrst,
+            freq: trnFreq
+        };
+
+        // Uploads employee data to the database
+        database.ref().push(newTrn);
+
+        // Logs everything to console
+        console.log(newTrn.name);
+        console.log(newTrn.destin);
+        console.log(newTrn.start);
+        console.log(newTrn.freq);
+
+        // Alert
+        alert("Train successfully added");
+
+        // Clears all of the text-boxes
+        $("#train-name-input").val("");
+        $("#destination-input").val("");
+        $("#first-train-input").val("");
+        $("#freq-input").val("");
+    });
+
+    // 3. Create Firebase event for adding employee to the database and a row in the html when a user adds an entry
+    database.ref().on("child_added", function (childSnapshot, prevChildKey) {
+
+        console.log(childSnapshot.val());
+
+        // Store everything into a variable.
+        var trnName = childSnapshot.val().name;
+        var trnDest = childSnapshot.val().destin;
+        var trnFrst = childSnapshot.val().start;
+        var trnFreq = childSnapshot.val().freq;
+
+        // Employee Info
+        console.log(trnName);
+        console.log(trnDest);
+        console.log(trnFrst);
+        console.log(trnFreq);
+
+        // Prettify the employee start
+        var trnFrstPretty = moment.unix(trnFrst).format("hh:mm a");
+
+        // Calculate the months worked using hardcore math
+        // To calculate the months worked
+        var minAway = moment().diff(moment.unix(trnFrst, "X"));
+        console.log(minAway);
+
+        // Calculate the total billed rate
+        var nextArrival = minAway * trnFreq;
+        console.log(empBilled);
+
+        // Add each train's data into the table
+        $("#train-table > tbody").append("<tr><td>" + trnName + "</td><td>" + trnDest + "</td><td>" +
+            trnFrstPretty + "</td><td>" + trnFreq + "</td><td>" +  nextArrival + "</td><td>" + minAway + "</td></tr>");
+    });
+
+// Example Time Math
+// -----------------------------------------------------------------------------
+// Assume Employee start date of January 1, 2015
+// Assume current date is March 1, 2016
+
+// We know that this is 15 months.
+// Now we will create code in moment.js to confirm that any attempt we use mets this test case
+</script>
+</body>
+
+</html>
